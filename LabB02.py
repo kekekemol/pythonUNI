@@ -1,22 +1,32 @@
 #Name: Ahmad Kamal Akasyah Bin Rohaizan
 #Student ID : 52213109023
 
-#Getting Staff ID and Name (a)
-name = str(input("please enter name: "))
-userid = int(input("please enter Staff ID :"))
+# Getting Staff ID and Name
+name = input("Please enter name: ")
+userid = int(input("Please enter Staff ID: "))
 
-#collecting input for hours
-total_regular_hours = int(input("please enter total regular hours for this month:  "))
-total_overtime_hours = int(input("please enter total overtime hours for this month: "))
+# Total hours worked
+hours_worked = int(input("Please enter total hours worked: "))
 
 hourly_wage = 35
 
+def calculateSalary(hours_worked, hourly_wage):
+    if hours_worked <= 6:
+        regular_hours = hours_worked
+        overtime_hours = 0
+    else:
+        regular_hours = 6
+        overtime_hours = hours_worked - 6
 
-#Function for calculateSalary (b)
-def calculateSalary(regular_hours,overtime_hours,hourly_wage):
-    regular_hours_pay = hourly_wage * regular_hours
-    overtime_hours_pay = overtime_hours * 1.5 * hourly_wage
+        # Maximum overtime is 5 hours
+        if overtime_hours > 5:
+            overtime_hours = 5
 
-    return regular_hours_pay + overtime_hours_pay
+    regular_pay = regular_hours * hourly_wage
+    overtime_pay = overtime_hours * hourly_wage * 1.7
 
-print(calculateSalary)
+    return regular_pay + overtime_pay
+
+salary = calculateSalary(hours_worked, hourly_wage)
+
+print("Weekly Pay =", salary)

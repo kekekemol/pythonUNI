@@ -1,9 +1,10 @@
-#Name: Ahmad Kamal Akasyah Bin Rohaizan
-#Student ID : 52213109023
-#Class: L01-B01
+#Name : Ahmad Kamal Akasyah Bin Rohaizan
+#Student Identification Number : 52213109023
+#Class : L01-B01
 #Online Practical Test
 
-#Creating staff object 
+
+# Creating Staff class
 class Staff:
     def __init__(self, staff_id, name):
         self.staff_id = staff_id
@@ -13,32 +14,76 @@ class Staff:
         print("Staff ID:", self.staff_id)
         print("Staff Name:", self.name)
 
-# Getting Staff ID and Name
-print("Enter Staff Information")
-name1 = input("Please enter name: ")
-userid1 = input("Please enter Staff ID: ")
-staff1=Staff(userid1, name1)
+
+
+# (a) Accept user input of Staff ID and name
+print("Enter Staff 1 Information")
+
+staff_id1 = input("Please enter Staff ID: ")
+name1 = input("Please enter Staff Name: ")
+
+staff1 = Staff(staff_id1, name1)
+
+
 
 print("\nEnter Staff 2 Information")
-name2 = input("Please enter name: ")
-userid2 = input("Please enter Staff ID: ")
-staff2=Staff(userid2, name2)
 
-#Displaying Staff ID and Name
-print("\n---Staff Details---")
+staff_id2 = input("Please enter Staff ID: ")
+name2 = input("Please enter Staff Name: ")
+
+staff2 = Staff(staff_id2, name2)
+
+
+
+# Display staff details
+print("\n--- Staff Details ---")
 
 staff1.displayStaff()
+
 print()
+
 staff2.displayStaff()
 
-# Getting working hours
+
+
+# (b) Function to calculate salary
+def calculateSalary(total_hours, hourly_wage):
+
+    # Regular working hours is 6 hours
+    regular_hours = 6
+
+
+    # Automatically calculate overtime hours
+    if total_hours > regular_hours:
+        overtime_hours = total_hours - regular_hours
+    else:
+        overtime_hours = 0
+
+
+    # Maximum overtime hours is 5 hours
+    if overtime_hours > 5:
+        overtime_hours = 5
+
+
+    # Calculate payment
+    regular_pay = regular_hours * hourly_wage
+
+    overtime_pay = overtime_hours * hourly_wage * 1.7
+
+
+    total_salary = regular_pay + overtime_pay
+
+    return total_salary
+
+
+
+# Getting working hours and wage
 print("\n--- Salary Calculation ---")
 
-regular_hours = int(input("Please enter regular hours worked: "))
-overtime_hours = int(input("Please enter overtime hours worked: "))
+total_hours = int(input("Please enter total hours worked: "))
 
 
-# Exception handling for hourly wage
+# (c) Exception handling for hourly wage
 try:
     hourly_wage = float(input("Please enter hourly wage rate: "))
 
@@ -48,24 +93,7 @@ except ValueError:
 
 
 
-# Function to calculate salary
-def calculateSalary(regular_hours, overtime_hours, hourly_wage):
-
-    # Maximum overtime is 5 hours
-    if overtime_hours > 5:
-        overtime_hours = 5
-
-    # Calculate payment
-    regular_pay = regular_hours * hourly_wage
-    overtime_pay = overtime_hours * hourly_wage * 1.7
-
-    total_salary = regular_pay + overtime_pay
-
-    return total_salary
-
-
-
 # Calculate and display salary
-salary = calculateSalary(regular_hours, overtime_hours, hourly_wage)
+salary = calculateSalary(total_hours, hourly_wage)
 
 print("Weekly Pay = RM", salary)

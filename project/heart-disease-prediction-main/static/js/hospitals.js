@@ -24,7 +24,7 @@
         results.hidden = true;
         list.replaceChildren();
         if (!window.isSecureContext || !navigator.geolocation) {
-            status.textContent = 'Location is unavailable in this browser. Use the Google Maps link below, or open this page on localhost or HTTPS.';
+            status.textContent = 'Location is unavailable in this browser. Use the OpenStreetMap link below, or open this page on localhost or HTTPS.';
             return;
         }
         button.disabled = true;
@@ -38,7 +38,7 @@
             });
             status.textContent = 'Finding nearby hospitals…';
             const controller = new AbortController();
-            const timeout = setTimeout(() => controller.abort(), 15000);
+            const timeout = setTimeout(() => controller.abort(), 35000);
             let response, data;
             try {
                 response = await fetch(form.action, {
@@ -64,26 +64,21 @@
             for (const hospital of data.hospitals) {
                 const card = textElement('article', '', 'hospital-card');
                 card.append(textElement('h3', hospital.name), textElement('p', hospital.address));
-                if (typeof hospital.rating === 'number') {
-                    card.append(textElement('p', `${hospital.rating.toFixed(1)} / 5 · ${hospital.rating_count} Google ratings`, 'hospital-rating'));
+                if (typeof hospital.distance_km === 'number') {
+                    card.append(textElement('p', `${hospital.distance_km.toFixed(2)} km away (straight-line)`, 'hospital-distance'));
                 }
-                if (hospital.maps_url) card.append(externalLink('View on Google Maps', hospital.maps_url));
-                for (const source of hospital.attributions) {
-                    const attribution = textElement('p', '', 'hospital-note');
-                    attribution.append(source.url ? externalLink(source.name, source.url) : textElement('span', source.name));
-                    card.append(attribution);
-                }
+                if (hospital.maps_url) card.append(externalLink('View on OpenStreetMap', hospital.maps_url));
                 list.append(card);
             }
             results.hidden = false;
             status.textContent = data.hospitals.length
-                ? `Found ${data.hospitals.length} hospitals. Results are ranked by distance.`
-                : 'No hospitals found within this radius. Try a wider search area.';
+                ? `Found ${data.hospitals.length} mapped hospitals. Results are ranked by approximate straight-line distance.`
+                : 'No hospitals are mapped within this radius. Try a wider search area.';
         } catch (error) {
             const locationErrors = {
-                1: 'Location permission was denied. Allow location in your browser settings or use Google Maps below.',
-                2: 'Your location could not be determined. Please try again or use Google Maps below.',
-                3: 'Getting your location took too long. Please try again or use Google Maps below.',
+                1: 'Location permission was denied. Allow location in your browser settings or use OpenStreetMap below.',
+                2: 'Your location could not be determined. Please try again or use OpenStreetMap below.',
+                3: 'Getting your location took too long. Please try again or use OpenStreetMap below.',
             };
             status.textContent = locationErrors[error.code] || (error.name === 'AbortError'
                 ? 'The search timed out. Please try again.'

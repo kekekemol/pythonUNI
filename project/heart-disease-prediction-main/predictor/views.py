@@ -3,7 +3,6 @@ from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.http import HttpResponse, JsonResponse
-from django.conf import settings
 from django.core.cache import cache
 from django.views.decorators.cache import never_cache
 from django.shortcuts import get_object_or_404, redirect, render
@@ -153,7 +152,6 @@ def home(request):
             "stats": stats,
             "default_name": full_name or request.user.username,
             "default_email": request.user.email,
-            "hospital_search_enabled": bool(settings.GOOGLE_PLACES_API_KEY),
         },
     )
 
@@ -163,8 +161,6 @@ def home(request):
 def nearby_hospitals(request):
     if not request.user.is_authenticated:
         return JsonResponse({"error": "Please sign in again to find hospitals."}, status=401)
-    if not settings.GOOGLE_PLACES_API_KEY:
-        return JsonResponse({"error": "Hospital search is not available yet."}, status=503)
     try:
         if len(request.body) > 1024:
             raise ValueError
@@ -182,13 +178,13 @@ def nearby_hospitals(request):
             raise ValueError
     except (ValueError, TypeError, KeyError, UnicodeDecodeError):
         return JsonResponse({"error": "Provide a valid location and search radius."}, status=400)
-    # Only a short user cooldown is cached, never coordinates or Google results.
+    # Only a short user cooldown is cached, never coordinates or hospital results.
     if not cache.add(f"hospital-search:{request.user.pk}", True, timeout=10):
         response = JsonResponse({"error": "Please wait 10 seconds before searching again."}, status=429)
         response["Retry-After"] = "10"
         return response
     try:
-        hospitals = search_hospitals(latitude, longitude, radius, settings.GOOGLE_PLACES_API_KEY)
+        hospitals = search_hospitals(latitude, longitude, radius)
     except PlacesUnavailable:
         return JsonResponse({"error": "Hospital search is temporarily unavailable. Please try again later."}, status=502)
     return JsonResponse({"hospitals": hospitals})

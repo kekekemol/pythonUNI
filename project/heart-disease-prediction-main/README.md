@@ -1,62 +1,68 @@
 # Heart Disease Prediction Using Machine Learning
 
-## Nearby hospital finder (Google Places API)
+## Nearby hospital finder (free OpenStreetMap / Overpass API)
 
 The dashboard includes a location-based hospital finder. It searches up to six
-hospitals within 5, 10, or 25 km, ranked by distance, with addresses, ratings,
-and Google Maps links. It works independently of the prediction result.
+hospitals within 5, 10, or 25 km, ranked by approximate straight-line distance,
+with available addresses and OpenStreetMap links. It works independently of the
+prediction result. **No signup, API key, billing account, or prepayment is needed.**
+The former Google Places integration and key setting have been removed.
 
 ### Enable live searches
 
-1. In Google Cloud, select a project, enable billing and **Places API (New)**,
-   then create an API key. Restrict it to Places API (New); for deployment, use
-   appropriate server IP restrictions. Configure quotas in Google Cloud.
-2. In PowerShell, from this project directory, set the key and start Django:
+1. In PowerShell, from this project directory, start Django:
 
    ```powershell
-   $env:GOOGLE_PLACES_API_KEY = "YOUR_KEY_HERE"
    .\.venv\Scripts\python.exe manage.py runserver
    ```
 
-   The environment variable must exist in the process starting Django. Setting
-   it in a terminal does not configure a separately double-clicked launcher.
-   Alternatively, run `.\RUN_PROJECT.cmd` from that same PowerShell window.
-   Restart an existing server after setting the key. `.env` is not loaded
-   automatically. Never commit a real key or place one in JavaScript/templates.
-3. Sign in at `http://127.0.0.1:8000/`, click **Find nearby hospitals**, and allow
+   Alternatively, double-click `RUN_PROJECT.cmd`. No key configuration is needed.
+2. Sign in at `http://127.0.0.1:8000/`, click **Find nearby hospitals**, and allow
    browser location access. Geolocation needs localhost or HTTPS.
 
-Without a key, the dashboard offers a direct Google Maps search link. There are
-no simulated hospitals or results. A Maps link is also available if location is
-denied, there are no results, or Google is unavailable.
+An internet connection is required. OpenStreetMap is community-maintained, so
+coverage and address details can be incomplete. Google ratings are no longer
+shown. Distances are calculated to mapped points or area centers, not driving
+routes; only hospitals whose representative point is within the radius appear.
+The OpenStreetMap link opens the map website for manual browsing if location
+permission is denied or the API is busy. Results are real API data, not simulated.
 
 ### How the code works
 
-- `predictor/places.py`: calls Google's Nearby Search (New) endpoint with a
-  10-second timeout and an explicit field mask. Ratings use the Enterprise
-  billing tier; check current pricing before enabling live use.
+- `predictor/places.py`: sends a bounded Overpass QL query to
+  `https://overpass-api.de/api/interpreter` for nodes, ways, and relations tagged
+  `amenity=hospital` or `healthcare=hospital`. Calculates great-circle distances,
+  removes duplicate OSM IDs, sorts results, and returns the nearest six.
+  The query has a 20-second execution limit and HTTP has a 30-second timeout.
+  Overpass partial results with runtime errors are treated as service failures.
 - `predictor/views.py`, `nearby_hospitals`: authenticated, CSRF-protected JSON
   POST endpoint at `/api/hospitals/nearby/`; validates coordinates and radius.
 - `predictor/templates/hospital_finder.html`: dashboard search controls.
 - `static/js/hospitals.js`: requests permission, submits coordinates, renders
   returned text safely, and handles loading, denied permission, and failures.
-- The key stays on the server. Search requests contain coordinates and radius,
+- Search requests contain coordinates and radius,
   not medical predictions or patient contact information. Neither locations nor
-  Google results are written to the database. Responses disable caching.
+  hospital results are written to the database. Responses disable caching.
 - A 10-second cooldown per user limits repeated calls. Django's default cache
-  is per process; use a shared cache and provider quotas for a multiworker site.
-- Google Maps attribution and returned third-party attributions are displayed.
-  Before public deployment, publish Terms of Use and a Privacy Policy as
-  required by Google Maps Platform, describing location sharing.
+  is per process. Requests happen only on a user's click, with no automatic
+  retries, background polling, or autocomplete. No new dependencies or migrations.
+- OpenStreetMap contributor attribution and an ODbL copyright link are displayed.
+- The public Overpass instance is shared and may throttle or time out. This
+  setup is intended for a small local coursework demonstration. Its operator
+  discourages production apps relying on the shared public backend; for wider
+  deployment, arrange a dedicated provider or self-hosted instance. The published
+  broad fair-use guideline is below 10,000 requests and 1 GB downloaded per day;
+  these are not guaranteed capacity or a service-level agreement.
 
-Tests use mocked Google responses and require no key or billable API calls:
+Tests use mocked Overpass responses and do not contact an external API:
 
 ```powershell
 .\.venv\Scripts\python.exe manage.py test predictor
 ```
 
-References: [Nearby Search documentation](https://developers.google.com/maps/documentation/places/web-service/nearby-search),
-[Places API policies](https://developers.google.com/maps/documentation/places/web-service/policies).
+References: [Overpass public-service guidance](https://dev.overpass-api.de/overpass-doc/en/preface/commons.html),
+[Overpass QL](https://wiki.openstreetmap.org/wiki/Overpass_API/Overpass_QL),
+[OpenStreetMap attribution](https://www.openstreetmap.org/copyright).
 
 ## 📌 Project Overview
 

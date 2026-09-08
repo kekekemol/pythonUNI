@@ -605,8 +605,8 @@ h1, h2, h3, h4, .navbar-brand { font-family: 'Manrope', sans-serif; }
 .hospital-card { padding: 16px; background: #f8f6fa; border-radius: 10px; overflow-wrap: anywhere; }
 .hospital-card h3 { font-size: 1rem; color: var(--navy); }
 .hospital-card p { font-size: .85rem; }
-.hospital-rating { color: #675117; }
-.google-maps-attribution { display: inline-block; margin-top: 14px; color: #5e5e5e; font: normal 400 12px sans-serif; letter-spacing: normal; white-space: nowrap; }
+.hospital-distance { color: #675117; }
+.osm-attribution { display: inline-block; margin-top: 14px; color: #5e5e5e; font-size: .8rem; }
 .hospital-fallback { display: inline-block; font-size: .85rem; }
 #hospital-status { margin-top: 14px; }
 

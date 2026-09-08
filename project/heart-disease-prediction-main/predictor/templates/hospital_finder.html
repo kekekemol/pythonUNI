@@ -1,0 +1,29 @@
+<section class="hospital-finder" aria-labelledby="hospital-title">
+    <span class="eyebrow">FIND CARE NEAR YOU</span>
+    <h2 id="hospital-title"><i class="fa-solid fa-hospital" aria-hidden="true"></i> Nearby hospitals</h2>
+    <p>Find up to six hospitals, ranked by distance from your current location.</p>
+    {% if hospital_search_enabled %}
+    <form id="hospital-search" action="{% url 'nearby_hospitals' %}" method="post">
+        {% csrf_token %}
+        <div class="hospital-controls">
+            <div><label for="hospital-radius" class="form-label">Search within</label>
+                <select id="hospital-radius" class="form-select" name="radius">
+                    <option value="5000">5 km</option>
+                    <option value="10000" selected>10 km</option>
+                    <option value="25000">25 km</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-brand" id="hospital-button">Find nearby hospitals</button>
+        </div>
+        <p class="hospital-note">When you search, your browser asks to share your location. Coordinates are sent to Google Maps through HeartSense for this search and are not saved to your patient record. Your medical result and contact details are not sent.</p>
+    </form>
+    <p id="hospital-status" role="status" aria-live="polite"></p>
+    <div id="hospital-results" class="hospital-results" hidden>
+        <div id="hospital-list" class="hospital-grid"></div>
+        <span class="google-maps-attribution" translate="no">Google Maps</span>
+    </div>
+    {% else %}
+    <p class="hospital-note">Hospital search is not available yet. You can search directly on Google Maps.</p>
+    {% endif %}
+    <a class="hospital-fallback" href="https://www.google.com/maps/search/hospitals+near+me/" target="_blank" rel="noopener noreferrer">Search on Google Maps <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></a>
+</section>

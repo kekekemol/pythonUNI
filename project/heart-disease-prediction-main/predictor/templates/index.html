@@ -1,0 +1,238 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Dashboard | HeartSense{% endblock %}
+
+{% block content %}
+<div class="container-xl dashboard-page">
+    <section class="dashboard-hero">
+        <div class="hero-copy">
+            <span class="hero-kicker"><i class="fa-solid fa-wave-square"></i> HEART RISK SCREENING</span>
+            <h1>Welcome back, <span>{{ user.first_name|default:user.username }}</span>.</h1>
+            <p>Enter the patient's clinical values to generate an instant machine-learning screening result and save it securely to your account history.</p>
+            <div class="hero-actions">
+                <a href="#prediction-form" class="btn btn-hero-primary"><i class="fa-solid fa-stethoscope me-2"></i>Start new prediction</a>
+                <a href="{% url 'history' %}" class="btn btn-hero-secondary"><i class="fa-solid fa-clock-rotate-left me-2"></i>View history</a>
+            </div>
+        </div>
+        <div class="hero-visual" aria-hidden="true">
+            <div class="pulse-orbit orbit-one"></div>
+            <div class="pulse-orbit orbit-two"></div>
+            <div class="hero-heart"><i class="fa-solid fa-heart-pulse"></i></div>
+            <div class="hero-mini-card top"><i class="fa-solid fa-shield-heart"></i><span><strong>Private</strong><small>Account-linked records</small></span></div>
+            <div class="hero-mini-card bottom"><i class="fa-solid fa-microchip"></i><span><strong>ML Model</strong><small>Instant screening</small></span></div>
+        </div>
+    </section>
+
+    <section class="stats-grid">
+        <article class="stat-card stat-total">
+            <span class="stat-icon"><i class="fa-solid fa-folder-tree"></i></span>
+            <div class="stat-copy"><span>Total predictions</span><strong>{{ stats.total }}</strong><small>Saved under your account</small></div>
+            <i class="fa-solid fa-arrow-trend-up stat-watermark"></i>
+        </article>
+        <article class="stat-card stat-risk">
+            <span class="stat-icon"><i class="fa-solid fa-heart-crack"></i></span>
+            <div class="stat-copy"><span>Disease detected</span><strong>{{ stats.positive }}</strong><small>Elevated-risk results</small></div>
+            <i class="fa-solid fa-triangle-exclamation stat-watermark"></i>
+        </article>
+        <article class="stat-card stat-clear">
+            <span class="stat-icon"><i class="fa-solid fa-shield-heart"></i></span>
+            <div class="stat-copy"><span>No disease detected</span><strong>{{ stats.negative }}</strong><small>Lower-risk results</small></div>
+            <i class="fa-solid fa-circle-check stat-watermark"></i>
+        </article>
+    </section>
+
+    {% if result %}
+        <section class="result-card {% if result == 'Heart Disease Detected' %}risk{% else %}clear{% endif %}" id="prediction-result">
+            <div class="result-status">
+                <span class="result-icon"><i class="fa-solid {% if result == 'Heart Disease Detected' %}fa-triangle-exclamation{% else %}fa-shield-heart{% endif %}"></i></span>
+                <div>
+                    <span class="result-kicker">LATEST PREDICTION</span>
+                    <h2>{{ result }}</h2>
+                    <p>This result has been saved to your prediction history.</p>
+                </div>
+            </div>
+            <div class="confidence-panel">
+                <div class="confidence-ring" style="--confidence: {{ confidence }};">
+                    <div><strong>{{ confidence }}%</strong><small>confidence</small></div>
+                </div>
+                <div class="confidence-copy">
+                    <strong>Model confidence</strong>
+                    <p>Confidence represents how strongly the trained model favored this classification.</p>
+                </div>
+            </div>
+            <div class="recommendation-box">
+                {% if result == "Heart Disease Detected" %}
+                    <span><i class="fa-solid fa-user-doctor"></i></span>
+                    <div><strong>Recommended next step</strong><p>This screening indicates elevated risk. Discuss the result and any symptoms with a qualified healthcare professional; do not treat this output as a diagnosis.</p></div>
+                {% else %}
+                    <span><i class="fa-solid fa-person-walking"></i></span>
+                    <div><strong>General health reminder</strong><p>A lower-risk prediction does not rule out heart disease. Continue healthy habits and seek medical assessment when symptoms or concerns are present.</p></div>
+                {% endif %}
+            </div>
+        </section>
+    {% endif %}
+
+    {% include 'hospital_finder.html' %}
+
+    <div class="row g-4 align-items-start" id="prediction-form">
+        <div class="col-xl-8">
+            <section class="form-card">
+                <div class="section-heading">
+                    <div class="heading-with-icon">
+                        <span class="heading-icon"><i class="fa-solid fa-notes-medical"></i></span>
+                        <div>
+                            <span class="eyebrow">NEW PREDICTION</span>
+                            <h2>Patient & clinical information</h2>
+                            <p>Complete all required fields. The system converts categorical selections into the values expected by the trained model.</p>
+                        </div>
+                    </div>
+                    <span class="step-pill"><i class="fa-solid fa-list-check me-1"></i> 13 model inputs</span>
+                </div>
+
+                <form method="POST" class="prediction-form">
+                    {% csrf_token %}
+
+                    <div class="form-section">
+                        <div class="form-section-title">
+                            <span>01</span>
+                            <div><strong>Patient information</strong><small>Contact details stored with the prediction report</small></div>
+                            <i class="fa-solid fa-id-card section-symbol"></i>
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label class="form-label"><i class="fa-solid fa-user"></i> Patient name</label>
+                                <input type="text" name="name" class="form-control" value="{{ default_name }}" placeholder="Full name" maxlength="100" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label"><i class="fa-solid fa-envelope"></i> Email</label>
+                                <input type="email" name="email" class="form-control" value="{{ default_email }}" placeholder="name@example.com" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label"><i class="fa-solid fa-phone"></i> Phone</label>
+                                <input type="text" name="phone" class="form-control" placeholder="e.g. 0123456789" maxlength="15" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <div class="form-section-title">
+                            <span>02</span>
+                            <div><strong>Core measurements</strong><small>Primary cardiovascular measurements</small></div>
+                            <i class="fa-solid fa-gauge-high section-symbol"></i>
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label class="form-label">Age</label>
+                                <div class="input-group"><input type="number" name="age" class="form-control" placeholder="45" min="1" max="120" required><span class="input-group-text">years</span></div>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Gender</label>
+                                <select name="sex" class="form-select" required><option value="1">Male</option><option value="0">Female</option></select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Resting blood pressure</label>
+                                <div class="input-group"><input type="number" name="trestbps" class="form-control" placeholder="120" min="50" max="250" required><span class="input-group-text">mmHg</span></div>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Cholesterol</label>
+                                <div class="input-group"><input type="number" name="chol" class="form-control" placeholder="200" min="50" max="700" required><span class="input-group-text">mg/dL</span></div>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Maximum heart rate</label>
+                                <div class="input-group"><input type="number" name="thalach" class="form-control" placeholder="150" min="50" max="250" required><span class="input-group-text">bpm</span></div>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">ST depression (Old Peak)</label>
+                                <input type="number" step="0.1" name="oldpeak" class="form-control" placeholder="1.5" min="0" max="10" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section last-section">
+                        <div class="form-section-title">
+                            <span>03</span>
+                            <div><strong>Diagnostic indicators</strong><small>Encoded categories used by the heart dataset</small></div>
+                            <i class="fa-solid fa-wave-square section-symbol"></i>
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Chest pain type</label>
+                                <select name="cp" class="form-select" required>
+                                    <option value="0">0 — Typical angina</option>
+                                    <option value="1">1 — Atypical angina</option>
+                                    <option value="2">2 — Non-anginal pain</option>
+                                    <option value="3">3 — Asymptomatic</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Fasting blood sugar &gt; 120 mg/dL</label>
+                                <select name="fbs" class="form-select" required><option value="0">No</option><option value="1">Yes</option></select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Resting ECG</label>
+                                <select name="restecg" class="form-select" required>
+                                    <option value="0">0 — Normal</option>
+                                    <option value="1">1 — ST-T abnormality</option>
+                                    <option value="2">2 — Left ventricular hypertrophy</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Exercise-induced angina</label>
+                                <select name="exang" class="form-select" required><option value="0">No</option><option value="1">Yes</option></select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">ST slope</label>
+                                <select name="slope" class="form-select" required><option value="0">0 — Upsloping</option><option value="1">1 — Flat</option><option value="2">2 — Downsloping</option></select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Major vessels (CA)</label>
+                                <select name="ca" class="form-select" required><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option></select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Thalassemia (Thal)</label>
+                                <select name="thal" class="form-select" required><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option></select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="submit-panel">
+                        <div class="submit-note"><span><i class="fa-solid fa-circle-info"></i></span><div><strong>Before submitting</strong><small>This ML output supports coursework/demo screening and is not a medical diagnosis.</small></div></div>
+                        <button type="submit" class="btn btn-brand btn-lg"><i class="fa-solid fa-heart-pulse me-2"></i>Run prediction</button>
+                    </div>
+                </form>
+            </section>
+        </div>
+
+        <div class="col-xl-4">
+            <aside class="side-card side-card-primary">
+                <div class="side-card-top"><span class="side-icon"><i class="fa-solid fa-list-check"></i></span><span class="side-number">01</span></div>
+                <h3>Check your measurements</h3>
+                <p>Use values from a reliable source rather than guessing. Accurate input matters because the ML model evaluates exactly what you provide.</p>
+                <ul class="check-list">
+                    <li><i class="fa-solid fa-droplet"></i><span>Blood pressure is entered in <strong>mmHg</strong></span></li>
+                    <li><i class="fa-solid fa-vial"></i><span>Cholesterol is entered in <strong>mg/dL</strong></span></li>
+                    <li><i class="fa-solid fa-heart-circle-bolt"></i><span>Heart rate is entered in <strong>bpm</strong></span></li>
+                </ul>
+            </aside>
+
+            <aside class="side-card side-card-accent">
+                <div class="side-card-top"><span class="side-icon"><i class="fa-solid fa-clock-rotate-left"></i></span><span class="side-number">02</span></div>
+                <h3>Your private history</h3>
+                <p>Each prediction is tied to your signed-in account. Open your history to review previous results or download a PDF report.</p>
+                <a href="{% url 'history' %}" class="btn btn-side w-100"><i class="fa-solid fa-folder-open me-2"></i>Open prediction history</a>
+            </aside>
+
+            <aside class="side-card side-card-note">
+                <div class="side-card-top"><span class="side-icon"><i class="fa-solid fa-lock"></i></span><span class="side-number">03</span></div>
+                <h3>Account-linked records</h3>
+                <p>Signed in as <strong>@{{ user.username }}</strong>. Normal users can only access their own prediction history and reports.</p>
+            </aside>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'js/hospitals.js' %}" defer></script>
+{% if result %}<script>document.getElementById('prediction-result')?.scrollIntoView({behavior:'smooth', block:'center'});</script>{% endif %}
+{% endblock %}

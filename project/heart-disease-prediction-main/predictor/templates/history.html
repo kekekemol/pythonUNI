@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+{% block title %}Prediction History | HeartSense{% endblock %}
+
+{% block content %}
+<div class="container-xl history-page">
+    <section class="page-banner history-banner">
+        <div>
+            <span class="hero-kicker"><i class="fa-solid fa-clock-rotate-left"></i> SAVED RECORDS</span>
+            <h1>Prediction history</h1>
+            <p>{% if user.is_staff %}Viewing all prediction records as a staff account.{% else %}Review results saved under your account and download individual PDF reports.{% endif %}</p>
+        </div>
+        <a href="{% url 'home' %}#prediction-form" class="btn btn-hero-primary"><i class="fa-solid fa-plus me-2"></i>New prediction</a>
+    </section>
+
+    <section class="history-card">
+        <div class="history-toolbar">
+            <div class="history-title-wrap">
+                <span class="history-icon"><i class="fa-solid fa-file-waveform"></i></span>
+                <div><strong>Saved screening reports</strong><small>{{ patients|length }} record{{ patients|length|pluralize }} shown</small></div>
+            </div>
+            <div class="history-legend">
+                <span><i class="fa-solid fa-circle risk-dot"></i> Disease detected</span>
+                <span><i class="fa-solid fa-circle clear-dot"></i> No disease detected</span>
+            </div>
+        </div>
+
+        {% if patients %}
+            <div class="table-responsive">
+                <table class="table modern-table align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Patient</th>
+                            <th>Contact</th>
+                            <th>Profile</th>
+                            <th>Prediction</th>
+                            <th>Confidence</th>
+                            <th>Date</th>
+                            <th class="text-end">Report</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for patient in patients %}
+                            <tr>
+                                <td>
+                                    <div class="patient-cell">
+                                        <span class="patient-avatar">{{ patient.name|first|upper }}</span>
+                                        <div><strong>{{ patient.name }}</strong><small>Record #{{ patient.id }}</small></div>
+                                    </div>
+                                </td>
+                                <td><span class="table-main"><i class="fa-regular fa-envelope"></i> {{ patient.email }}</span><small><i class="fa-solid fa-phone"></i> {{ patient.phone }}</small></td>
+                                <td><span class="table-main">{{ patient.age }} years</span><small>{{ patient.gender }}</small></td>
+                                <td>
+                                    {% if patient.prediction == "Heart Disease Detected" %}
+                                        <span class="status-badge risk"><i class="fa-solid fa-triangle-exclamation"></i> Disease detected</span>
+                                    {% else %}
+                                        <span class="status-badge clear"><i class="fa-solid fa-shield-heart"></i> No disease detected</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="confidence-mini">
+                                        <strong>{{ patient.confidence }}%</strong>
+                                        <div><span class="{% if patient.prediction == 'Heart Disease Detected' %}risk-bar{% else %}clear-bar{% endif %}" style="width: {{ patient.confidence }}%"></span></div>
+                                    </div>
+                                </td>
+                                <td><span class="table-main">{{ patient.created_at|date:"d M Y" }}</span><small>{{ patient.created_at|date:"g:i A" }}</small></td>
+                                <td class="text-end"><a href="{% url 'download_pdf' patient.id %}" class="btn btn-report btn-sm" title="Download PDF"><i class="fa-solid fa-file-pdf"></i><span class="d-none d-xxl-inline ms-1">PDF</span></a></td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <span><i class="fa-solid fa-folder-open"></i></span>
+                <h3>No prediction records yet</h3>
+                <p>Run your first screening prediction and the saved result will appear here automatically.</p>
+                <a href="{% url 'home' %}#prediction-form" class="btn btn-brand"><i class="fa-solid fa-heart-pulse me-2"></i>Run first prediction</a>
+            </div>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}

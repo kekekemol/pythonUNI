@@ -1,0 +1,16 @@
+PATCH INSTALLATION (preserves your existing venv and db.sqlite3)
+
+1. Stop the Django server with CTRL+C.
+2. Copy everything INSIDE this patch folder into:
+   C:\xampp\htdocs\heart-disease-prediction-main
+3. Allow Windows to replace files with the same names.
+4. Do NOT delete your existing venv or db.sqlite3.
+5. In PowerShell, from the project root, run:
+
+   .\venv\Scripts\python.exe manage.py migrate
+   .\venv\Scripts\python.exe manage.py runserver
+
+The migrate command fixes:
+no such column: predictor_patient.user_id
+
+After that, the migration only needs to be applied once.

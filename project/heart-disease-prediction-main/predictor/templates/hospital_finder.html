@@ -1,0 +1,26 @@
+<section class="hospital-finder" aria-labelledby="hospital-title">
+    <span class="eyebrow">FIND CARE NEAR YOU</span>
+    <h2 id="hospital-title"><i class="fa-solid fa-hospital" aria-hidden="true"></i> Nearby hospitals</h2>
+    <p>Find up to six mapped hospitals, ranked by approximate straight-line distance from your location.</p>
+    <form id="hospital-search" action="{% url 'nearby_hospitals' %}" method="post">
+        {% csrf_token %}
+        <div class="hospital-controls">
+            <div><label for="hospital-radius" class="form-label">Search within</label>
+                <select id="hospital-radius" class="form-select" name="radius">
+                    <option value="5000">5 km</option>
+                    <option value="10000" selected>10 km</option>
+                    <option value="25000">25 km</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-brand" id="hospital-button">Find nearby hospitals</button>
+        </div>
+        <p class="hospital-note">When you search, your browser asks to share your location. Coordinates are sent to the public Overpass service through HeartSense and are not saved to your patient record. Your medical result and contact details are not sent.</p>
+    </form>
+    <p id="hospital-status" role="status" aria-live="polite"></p>
+    <div id="hospital-results" class="hospital-results" hidden>
+        <div id="hospital-list" class="hospital-grid"></div>
+        <a class="osm-attribution" href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">&copy; OpenStreetMap contributors (ODbL)</a>
+    </div>
+    <p class="hospital-note">Map coverage and address details may be incomplete. The free public service may be busy; please try again later if a search fails.</p>
+    <a class="hospital-fallback" href="https://www.openstreetmap.org/" target="_blank" rel="noopener noreferrer">Open OpenStreetMap <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></a>
+</section>
